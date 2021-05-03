@@ -3,6 +3,7 @@
 # Class describing a basic chess piece
 class ChessPiece
   attr_reader :token, :position
+
   MOVES = [].freeze
 
   def initialize(position, is_white)
