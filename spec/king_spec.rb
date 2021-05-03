@@ -10,7 +10,7 @@ describe 'King' do
   describe '#next_moves' do
     it 'Returns [[1, 0], [1, 1], [0, 1]] if position is [0, 0]' do
       next_moves = king.next_moves
-    expect(next_moves).to eq([[1, 0], [1, 1], [0, 1]])
+      expect(next_moves).to eq([[1, 0], [1, 1], [0, 1]])
     end
   end
 end

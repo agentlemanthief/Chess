@@ -2,10 +2,13 @@
 
 # Class describing a basic chess piece
 class ChessPiece
+  attr_reader :token, :position
   MOVES = [].freeze
-  def initialize(position, color)
+
+  def initialize(position, is_white)
     @position = position
-    @color = color
+    @is_white = is_white
+    @token = nil
   end
 
   def next_moves
