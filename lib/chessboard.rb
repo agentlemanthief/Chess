@@ -96,6 +96,33 @@ class ChessBoard
   def place_pawns(co_ord, is_white)
     @board[co_ord].map!.with_index { |_space, i| Pawn.new([co_ord, i], is_white) }
   end
+
+  def move_input
+    puts "Please choose a cell, e.g. 'a1'"
+    validate(gets.chomp.upcase)
+  end
+
+  def validate(input)
+    return input if input.match?(/^[A-Z][1-8]$/)
+
+    puts "Please enter in the format: 'a1'"
+    validate(gets.chomp.upcase)
+  end
+
+  def move_piece
+    piece_coord = return_coord
+    destination = return_coord
+    @board[piece_coord[0]][piece_coord[1]], @board[destination[0]][destination[1]] =
+      @board[destination[0]][destination[1]], @board[piece_coord[0]][piece_coord[1]]
+  end
+
+  def return_coord
+    alpha = %w[A B C D E F G H]
+    move_split = move_input.split('')
+    temp_a = move_split[1].to_i - 1
+    temp_b = alpha.index(move_split[0])
+    [temp_a, temp_b]
+  end
 end
 
 board = ChessBoard.new
@@ -106,7 +133,6 @@ board.initial_placement
 
 board.display_board
 
-p board.board[1][5].next_moves
+board.move_piece
 
-p board.board[6][5].position
-p board.board[6][4].position
+board.display_board

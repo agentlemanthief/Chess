@@ -1,3 +1,4 @@
 AllCops:
   Exclude:
     - '/Users/nicholasbaldwin/Documents/Programming/the_odin_project/Fullstack Ruby/chess/spec/spec_helper.rb'
+  NewCops: enable
