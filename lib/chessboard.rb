@@ -9,10 +9,13 @@ require_relative 'pawn'
 
 # Class describing a chessboard and its methods
 class ChessBoard
+  attr_reader :taken_black_pieces
   attr_accessor :board
 
   def initialize
     @board = Array.new(8) { Array.new(8, ' ') }
+    @taken_white_pieces = []
+    @taken_black_pieces = []
   end
 
   # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
@@ -110,18 +113,65 @@ class ChessBoard
   end
 
   def move_piece
-    piece_coord = return_coord
-    destination = return_coord
-    @board[piece_coord[0]][piece_coord[1]], @board[destination[0]][destination[1]] =
-      @board[destination[0]][destination[1]], @board[piece_coord[0]][piece_coord[1]]
+    piece_co_ord = return_co_ord
+    destination = return_co_ord
+    until move_valid_for_piece?(piece_co_ord, destination) && path_clear?(piece_co_ord, destination)
+      puts 'Choose another move'
+      destination = return_co_ord
+    end
+    if space_empty?(destination)
+      make_move(piece_co_ord, destination)
+    elsif select_piece(piece_co_ord).is_white != select_piece(destination).is_white
+      take_piece(piece_co_ord, destination)
+    else
+      puts "You cannot take your own pieces!"
+      move_piece
+    end
   end
 
-  def return_coord
+  def select_piece(co_ord)
+    @board[co_ord[0]][co_ord[1]]
+  end
+
+  def make_move(piece_co_ord, destination)
+    @board[piece_co_ord[0]][piece_co_ord[1]], @board[destination[0]][destination[1]] = select_piece(destination), select_piece(piece_co_ord)
+    update_piece_position(destination)
+  end
+
+  def update_piece_position(destination)
+    select_piece(destination).position = destination
+  end
+
+  def return_co_ord
     alpha = %w[A B C D E F G H]
     move_split = move_input.split('')
     temp_a = move_split[1].to_i - 1
     temp_b = alpha.index(move_split[0])
     [temp_a, temp_b]
+  end
+
+  def space_empty?(destination)
+    return true if @board[destination[0]][destination[1]] == ' '
+  end
+
+  def move_valid_for_piece?(piece_co_ord, destination)
+    return true if select_piece(piece_co_ord).next_moves.include?(destination)
+  end
+
+  def path_clear?(piece_co_ord, destination)
+    path = select_piece(piece_co_ord).path(piece_co_ord, destination)
+    path.map! { |co_ord| select_piece(co_ord).is_a?(ChessPiece) }
+    !path.include?(true)
+  end
+
+  def take_piece(piece_co_ord, destination)
+    add_to_taken_array(destination)
+    @board[piece_co_ord[0]][piece_co_ord[1]], @board[destination[0]][destination[1]] = ' ', select_piece(piece_co_ord)
+    update_piece_position(destination)
+  end
+
+  def add_to_taken_array(destination)
+    select_piece(destination).is_white ? @taken_white_pieces << select_piece(destination) : @taken_black_pieces << select_piece(destination)
   end
 end
 
@@ -136,3 +186,23 @@ board.display_board
 board.move_piece
 
 board.display_board
+
+board.move_piece
+
+board.display_board
+
+board.move_piece
+
+board.display_board
+
+board.move_piece
+
+board.display_board
+
+p board.select_piece([5, 0])
+
+# board.take_piece([1, 0], [6, 0])
+
+# board.display_board
+
+# p board.taken_black_pieces
