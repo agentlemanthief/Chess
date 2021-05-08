@@ -122,9 +122,16 @@ class ChessBoard
     if space_empty?(destination)
       make_move(piece_co_ord, destination)
     elsif select_piece(piece_co_ord).is_white != select_piece(destination).is_white
-      take_piece(piece_co_ord, destination)
+      if select_piece(piece_co_ord).is_a?(Pawn) && select_piece(piece_co_ord).take_moves.include?(destination)
+        take_piece(piece_co_ord, destination)
+      elsif !select_piece(piece_co_ord).is_a?(Pawn)
+        take_piece(piece_co_ord, destination)
+      else
+        puts "You can't take that way, try another move."
+        move_piece
+      end
     else
-      puts "You cannot take your own pieces!"
+      puts "You cannot take your own pieces! Try another move."
       move_piece
     end
   end
@@ -155,10 +162,16 @@ class ChessBoard
   end
 
   def move_valid_for_piece?(piece_co_ord, destination)
-    return true if select_piece(piece_co_ord).next_moves.include?(destination)
+    if select_piece(piece_co_ord).next_moves.include?(destination)
+      return true
+    elsif select_piece(piece_co_ord).is_a?(Pawn)
+      return true if select_piece(piece_co_ord).take_moves.include?(destination)
+    end
   end
 
   def path_clear?(piece_co_ord, destination)
+    return true if select_piece(piece_co_ord).is_a?(Pawn)
+
     path = select_piece(piece_co_ord).path(piece_co_ord, destination)
     path.map! { |co_ord| select_piece(co_ord).is_a?(ChessPiece) }
     !path.include?(true)
@@ -183,26 +196,7 @@ board.initial_placement
 
 board.display_board
 
-board.move_piece
-
-board.display_board
-
-board.move_piece
-
-board.display_board
-
-board.move_piece
-
-board.display_board
-
-board.move_piece
-
-board.display_board
-
-p board.select_piece([5, 0])
-
-# board.take_piece([1, 0], [6, 0])
-
-# board.display_board
-
-# p board.taken_black_pieces
+5.times do
+  board.move_piece
+  board.display_board
+end
