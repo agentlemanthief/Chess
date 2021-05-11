@@ -206,7 +206,33 @@ class ChessBoard
         check_each_piece_for_check(king, is_white)
       end
     end
-    make_move(king.position, start_king_position)
+    make_move(king.position, start_king_position) if king.position != start_king_position
+    results.delete(nil)
     results.all?(true)
   end
 end
+
+
+board = ChessBoard.new
+
+board.initial_placement
+
+board.board = [
+  [Rook.new([0, 0], true), Knight.new([0, 1], true), Bishop.new([0, 2], true), Queen.new([0, 3], true), King.new([0, 4], true), Bishop.new([0, 5], true), Knight.new([0, 6], true), Rook.new([0, 7], true)],
+  [Pawn.new([1, 0], true), Pawn.new([1, 1], true), Pawn.new([1, 2], true), Pawn.new([1, 3], true), ' ', Pawn.new([1, 5], true), Pawn.new([1, 6], true), Pawn.new([1, 7], true)],
+  [' ', ' ', ' ', ' ', Rook.new([2, 4], false), ' ', ' ', ' '],
+  [' ', ' ', ' ', ' ', Pawn.new([3, 4], true), ' ', ' ', ' '],
+  [Pawn.new([4, 0], false), ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+  [' ', Pawn.new([6, 1], false), Pawn.new([6, 2], false), Pawn.new([6, 3], false), Pawn.new([6, 4], false), Pawn.new([6, 5], false), Pawn.new([6, 6], false), Pawn.new([6, 7], false)],
+  [' ', Knight.new([7, 1], false), Bishop.new([7, 2], false), Queen.new([7, 3], false), King.new([7, 4], false), Bishop.new([7, 5], false), Knight.new([7, 6], false), Rook.new([7, 7], false)]
+]
+
+board.display_board
+
+p board.check?(true)
+
+p board.check_mate?(true)
+
+board.display_board
+
