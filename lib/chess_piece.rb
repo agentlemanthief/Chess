@@ -38,7 +38,7 @@ class ChessPiece
     current = queue.shift
     until current.position == destination
       current.next_moves(self.class::MOVE_STEP).each do |move|
-        queue << self.class.new(move, true, current)
+        queue << self.class.new(move, self.is_white, current)
       end
       current = queue.shift
     end
