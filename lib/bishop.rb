@@ -10,7 +10,7 @@ class Bishop < ChessPiece
     [-1, 1], [-2, 2], [-3, 3], [-4, 4], [-5, 5], [-7, 7],
     [-1, -1], [-2, -2], [-3, -3], [-4, -4], [-5, -5], [-7, -7]
   ].freeze
-  MOVE_STEP = [[1, 0], [0, 1], [-1, 0], [0, -1]].freeze
+  MOVE_STEP = [[1, 1], [-1, 1], [-1, -1], [1, -1]].freeze
 
   def initialize(position, is_white, parent = nil)
     super(position, is_white, parent)
