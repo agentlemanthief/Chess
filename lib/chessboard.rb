@@ -7,11 +7,10 @@ require_relative 'knight'
 require_relative 'rook'
 require_relative 'pawn'
 require_relative 'display'
-require 'pry'
 
-# Class describing a chessboard and its methods
+# Class describing a chessboard and the methods required to manipulate chess pieces/check for check/checkmate
 class ChessBoard
-  attr_reader :taken_black_pieces
+  attr_reader :taken_black_pieces, :taken_white_pieces
   attr_accessor :board
 
   include Display
@@ -20,6 +19,7 @@ class ChessBoard
     @board = Array.new(8) { Array.new(8, ' ') }
     @taken_white_pieces = []
     @taken_black_pieces = []
+    initial_placement
   end
 
   def initial_placement
@@ -72,44 +72,6 @@ class ChessBoard
     @board[co_ord].map!.with_index { |_space, i| Pawn.new([co_ord, i], is_white) }
   end
 
-  def move_input # move to Game
-    puts "Please choose a cell, e.g. 'a1'"
-    puts "If you change your mind type 'esc' to choose your piece again."
-    validate(gets.chomp.upcase)
-  end
-
-  def validate(input) # move to Game
-    return input if input.match?(/^[A-Z][1-8]$|^\e$/)
-
-    puts "Please enter in the format: 'a1'"
-    validate(gets.chomp.upcase)
-  end
-
-  def move_piece
-    piece_co_ord = return_co_ord
-    destination = return_co_ord
-    return move_piece if destination == "\e"
-    until move_valid_for_piece?(piece_co_ord, destination) && path_clear?(piece_co_ord, destination)
-      puts 'Choose another move'
-      destination = return_co_ord
-    end
-    if space_empty?(destination)
-      make_move(piece_co_ord, destination)
-    elsif select_piece(piece_co_ord).is_white != select_piece(destination).is_white
-      if select_piece(piece_co_ord).is_a?(Pawn) && select_piece(piece_co_ord).take_moves.include?(destination)
-        take_piece(piece_co_ord, destination)
-      elsif !select_piece(piece_co_ord).is_a?(Pawn)
-        take_piece(piece_co_ord, destination)
-      else
-        puts "You can't take that way, try another move."
-        move_piece
-      end
-    else
-      puts 'You cannot take your own pieces! Try another move.'
-      move_piece
-    end
-  end
-
   def select_piece(co_ord)
     @board[co_ord[0]][co_ord[1]]
   end
@@ -122,18 +84,6 @@ class ChessBoard
 
   def update_piece_position(destination)
     select_piece(destination).position = destination
-  end
-
-  def return_co_ord # move to Game
-    alpha = %w[A B C D E F G H]
-    move_split = move_input.split('')
-    if move_split.include?("\e")
-      puts "You changed your mind, choose another piece to move."
-      return "\e"
-    end
-    temp_a = move_split[1].to_i - 1
-    temp_b = alpha.index(move_split[0])
-    [temp_a, temp_b]
   end
 
   def space_empty?(destination)
@@ -212,27 +162,13 @@ class ChessBoard
   end
 end
 
-
-board = ChessBoard.new
-
-board.initial_placement
-
-board.board = [
-  [Rook.new([0, 0], true), Knight.new([0, 1], true), Bishop.new([0, 2], true), Queen.new([0, 3], true), King.new([0, 4], true), Bishop.new([0, 5], true), Knight.new([0, 6], true), Rook.new([0, 7], true)],
-  [Pawn.new([1, 0], true), Pawn.new([1, 1], true), Pawn.new([1, 2], true), Pawn.new([1, 3], true), ' ', Pawn.new([1, 5], true), Pawn.new([1, 6], true), Pawn.new([1, 7], true)],
-  [' ', ' ', ' ', ' ', Rook.new([2, 4], false), ' ', ' ', ' '],
-  [' ', ' ', ' ', ' ', Pawn.new([3, 4], true), ' ', ' ', ' '],
-  [Pawn.new([4, 0], false), ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-  [' ', Pawn.new([6, 1], false), Pawn.new([6, 2], false), Pawn.new([6, 3], false), Pawn.new([6, 4], false), Pawn.new([6, 5], false), Pawn.new([6, 6], false), Pawn.new([6, 7], false)],
-  [' ', Knight.new([7, 1], false), Bishop.new([7, 2], false), Queen.new([7, 3], false), King.new([7, 4], false), Bishop.new([7, 5], false), Knight.new([7, 6], false), Rook.new([7, 7], false)]
-]
-
-board.display_board
-
-p board.check?(true)
-
-p board.check_mate?(true)
-
-board.display_board
-
+# board.board = [
+#   [Rook.new([0, 0], true), Knight.new([0, 1], true), Bishop.new([0, 2], true), Queen.new([0, 3], true), King.new([0, 4], true), Bishop.new([0, 5], true), Knight.new([0, 6], true), Rook.new([0, 7], true)],
+#   [Pawn.new([1, 0], true), Pawn.new([1, 1], true), Pawn.new([1, 2], true), Pawn.new([1, 3], true), ' ', Pawn.new([1, 5], true), Pawn.new([1, 6], true), Pawn.new([1, 7], true)],
+#   [' ', ' ', ' ', ' ', Rook.new([2, 4], false), ' ', ' ', ' '],
+#   [' ', ' ', ' ', ' ', Pawn.new([3, 4], true), ' ', ' ', ' '],
+#   [Pawn.new([4, 0], false), ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+#   [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+#   [' ', Pawn.new([6, 1], false), Pawn.new([6, 2], false), Pawn.new([6, 3], false), Pawn.new([6, 4], false), Pawn.new([6, 5], false), Pawn.new([6, 6], false), Pawn.new([6, 7], false)],
+#   [' ', Knight.new([7, 1], false), Bishop.new([7, 2], false), Queen.new([7, 3], false), King.new([7, 4], false), Bishop.new([7, 5], false), Knight.new([7, 6], false), Rook.new([7, 7], false)]
+# ]
