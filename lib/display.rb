@@ -1,5 +1,41 @@
+# Module containing display elements for the chess game
 module Display
   # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+
+  INTRO = <<~'INTRO'
+    /\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\
+    \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/
+
+      Welcome to Chess!
+
+      Chess is a recreational and competitive board game played between two players.
+      It is sometimes called Western or international chess to distinguish it from
+      related games such as xiangqi. The current form of the game emerged in
+      Southern Europe during the second half of the 15th century after evolving from
+      similar, much older games of Indian and Persian origin. Today, chess is one of
+      the world's most popular games, played by millions of people worldwide at home,
+      in clubs, online, by correspondence, and in tournaments.
+
+      Chess is an abstract strategy game and involves no hidden information. It is
+      played on a square chessboard with 64 squares arranged in an eight-by-eight
+      grid. At the start, each player (one controlling the white pieces, the other
+      controlling the black pieces) controls sixteen pieces: one king, one queen,
+      two rooks, two knights, two bishops, and eight pawns. The object of the game
+      is to checkmate the opponent's king, whereby the king is under immediate attack
+      (in "check") and there is no way for it to escape. There are also several
+      ways a game can end in a draw.
+
+      You can save your game at any time by typing 'save'. You can then carry on where
+      you left off next time.
+
+      Good luck players!
+
+      Press any key to continue...
+
+    /\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\
+    \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/
+  INTRO
+
   def display_board
     puts <<-BOARD
 
