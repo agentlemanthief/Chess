@@ -12,6 +12,7 @@ class Game
   def initialize(chess_board = ChessBoard.new)
     @chess_board = chess_board
     @winner = nil
+    @white_player_turn = true
   end
 
   def play_game
@@ -25,18 +26,13 @@ class Game
 
   def game_loop
     loop do
-      puts "White move.\n\n"
-      move_piece
+      puts "#{@white_player_turn ? 'White' : 'Black'} move.\n\n"
+      move_piece(@white_player_turn)
       @chess_board.display_board
-      puts 'Black King is in check' if @chess_board.check?(false)
-      break if game_over?(false)
+      puts "#{@white_player_turn ? 'Black' : 'White'} King is in check" if @chess_board.check?(!@white_player_turn)
+      break if game_over?(!@white_player_turn)
 
-      puts "Black move.\n\n"
-      move_piece
-      @chess_board.display_board
-      puts 'White King is in check' if @chess_board.check?(true)
-      break if game_over?(true)
-
+      @white_player_turn ? @white_player_turn = false : @white_player_turn = true
     end
   end
 
@@ -57,16 +53,16 @@ class Game
     validate(gets.chomp.upcase)
   end
 
-  def move_piece
+  def move_piece(is_white_piece)
     puts "Please choose a piece to move."
     piece_co_ord = return_co_ord
-    while @chess_board.space_empty?(piece_co_ord)
-      puts 'Please pick a piece, try again...'
+    while @chess_board.space_empty?(piece_co_ord) || !@chess_board.select_piece(piece_co_ord).is_white == is_white_piece
+      puts 'Please pick a one or your pieces, try again...'
       piece_co_ord = return_co_ord
     end
     puts "Please choose where to move to."
     destination = return_co_ord
-    return move_piece if destination == "\e"
+    return move_piece(is_white_piece) if destination == "\e"
     until @chess_board.move_valid_for_piece?(piece_co_ord, destination) && @chess_board.path_clear?(piece_co_ord, destination)
       puts 'Choose another move'
       destination = return_co_ord
@@ -80,11 +76,11 @@ class Game
         @chess_board.take_piece(piece_co_ord, destination)
       else
         puts "You can't take that way, try another move."
-        move_piece
+        move_piece(is_white_piece)
       end
     else
       puts 'You cannot take your own pieces! Try another move.'
-      move_piece
+      move_piece(is_white_piece)
     end
   end
 
@@ -123,13 +119,15 @@ class Game
 
   def to_yaml
     YAML.dump(
-      'chess_board' => @chess_board
+      'chess_board' => @chess_board,
+      'white_player_turn' => @white_player_turn
     )
   end
 
   def from_yaml(file)
     data = YAML.load(File.read(file))
     @chess_board = data['chess_board']
+    @white_player_turn = data['white_player_turn']
   end
 
   def load_game
