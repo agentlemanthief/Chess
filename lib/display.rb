@@ -21,12 +21,12 @@ module Display
       grid. At the start, each player (one controlling the white pieces, the other
       controlling the black pieces) controls sixteen pieces: one king, one queen,
       two rooks, two knights, two bishops, and eight pawns. The object of the game
-      is to checkmate the opponent's king, whereby the king is under immediate attack
-      (in "check") and there is no way for it to escape. There are also several
-      ways a game can end in a draw.
+      is to checkmate the opponent's king, whereby the king is under immediate
+      attack (in "check") and there is no way for it to escape. There are also
+      several ways a game can end in a draw.
 
-      You can save your game at any time by typing 'save'. You can then carry on where
-      you left off next time.
+      You can save your game at any time by typing 'save'. You can then carry on
+      where you left off next time.
 
       Good luck players!
 
