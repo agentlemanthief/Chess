@@ -54,21 +54,34 @@ class Game
   end
 
   def move_piece(is_white_piece)
-    puts "Please choose a piece to move."
+    if @chess_board.check?(is_white_piece)
+      puts 'Please make a move out of check.'
+    else
+      puts "Please choose a piece to move."
+    end
+
     piece_co_ord = return_co_ord
-    while @chess_board.space_empty?(piece_co_ord) || !@chess_board.select_piece(piece_co_ord).is_white == is_white_piece
-      puts 'Please pick a one or your pieces, try again...'
+
+    while @chess_board.space_empty?(piece_co_ord) || @chess_board.select_piece(piece_co_ord).is_white != is_white_piece
+      puts 'Please pick one of your pieces, try again...'
       piece_co_ord = return_co_ord
     end
+
     puts "Please choose where to move to."
     destination = return_co_ord
+
+    # insert check, check. If king still in check prompt to try another move or move another piece
+
     return move_piece(is_white_piece) if destination == "\e"
+
     until @chess_board.move_valid_for_piece?(piece_co_ord, destination) && @chess_board.path_clear?(piece_co_ord, destination)
       puts 'Choose another move'
       destination = return_co_ord
     end
+
     if @chess_board.space_empty?(destination)
       @chess_board.make_move(piece_co_ord, destination)
+      move_piece(is_white_piece) if @chess_board.check?(is_white_piece)
     elsif @chess_board.select_piece(piece_co_ord).is_white != @chess_board.select_piece(destination).is_white
       if @chess_board.select_piece(piece_co_ord).is_a?(Pawn) && @chess_board.select_piece(piece_co_ord).take_moves.include?(destination)
         @chess_board.take_piece(piece_co_ord, destination)
@@ -134,8 +147,8 @@ class Game
     return unless File.exist?('save_game.yaml')
 
     puts "\nWould you like to continue where you left off last time? (Enter: \"y\" or \"n\")"
-    answer = gets.chomp.downcase
-    return unless answer == 'y'
+    answer = gets.chomp.upcase
+    return unless answer == 'Y'
 
     File.open('save_game.yaml', 'r') do |file|
       from_yaml(file)
