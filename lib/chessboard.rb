@@ -10,7 +10,7 @@ require_relative 'display'
 
 # Class describing a chessboard and the methods required to manipulate chess pieces/check for check/checkmate
 class ChessBoard
-  attr_reader :taken_black_pieces, :taken_white_pieces
+  attr_reader :taken_black_pieces, :taken_white_pieces, :in_check_by
   attr_accessor :board
 
   include Display
@@ -19,6 +19,7 @@ class ChessBoard
     @board = Array.new(8) { Array.new(8, ' ') }
     @taken_white_pieces = []
     @taken_black_pieces = []
+    @in_check_by = nil
     initial_placement
   end
 
@@ -129,11 +130,14 @@ class ChessBoard
   end
 
   def check_each_piece_for_check(king, is_white)
+    @in_check_by = nil
     result = @board.map do |array|
       array.map do |square|
         if square.is_a?(ChessPiece) && !square.is_a?(Pawn) && square.is_white != is_white
+          @in_check_by = square
           move_valid_for_piece?(square.position, king.position) && path_clear?(square.position, king.position)
         elsif square.is_a?(ChessPiece) && square.is_a?(Pawn) && square.is_white != is_white
+          @in_check_by = square
           square.take_moves.include?(king.position)
         end
       end
@@ -148,27 +152,53 @@ class ChessBoard
 
   def check_mate?(is_white)
     king = return_king(is_white)
-    start_king_position = king.position
 
-    results = king.next_moves.map do |move|
-      if space_empty?(move)
-        make_move(king.position, move)
-        check_each_piece_for_check(king, is_white)
+    # select all pieces of is_white colour
+    pieces = @board.map do |array|
+      array.select { |square| square.is_a?(ChessPiece) && square.is_white == is_white }
+    end
+    pieces.flatten!
+
+    # check all pieces moves to see if still in check
+    results = []
+    pieces.map do |piece|
+      original_position = piece.position
+      piece.next_moves.map do |move|
+        if space_empty?(move)
+          make_move(piece.position, move)
+          results << check?(is_white)
+          make_move(piece.position, original_position)
+        end
       end
     end
-    make_move(king.position, start_king_position) if king.position != start_king_position
-    results.delete(nil)
+
+    # can king take piece putting it in check/take it's way out of check?
+    king.next_moves.map do |move|
+      original_position = king.position
+      if !space_empty?(move) && select_piece(move).is_white != is_white
+        take_piece(king.position, move)
+        results << check?(is_white)
+        untake(move, original_position, is_white)
+      end
+    end
+
+    # can other pieces take the piece putting king in check?
+    results << !check_each_piece_for_check(@in_check_by, @in_check_by.is_white)
+    @in_check_by = nil
     results.all?(true)
   end
-end
 
-# board.board = [
-#   [Rook.new([0, 0], true), Knight.new([0, 1], true), Bishop.new([0, 2], true), Queen.new([0, 3], true), King.new([0, 4], true), Bishop.new([0, 5], true), Knight.new([0, 6], true), Rook.new([0, 7], true)],
-#   [Pawn.new([1, 0], true), Pawn.new([1, 1], true), Pawn.new([1, 2], true), Pawn.new([1, 3], true), ' ', Pawn.new([1, 5], true), Pawn.new([1, 6], true), Pawn.new([1, 7], true)],
-#   [' ', ' ', ' ', ' ', Rook.new([2, 4], false), ' ', ' ', ' '],
-#   [' ', ' ', ' ', ' ', Pawn.new([3, 4], true), ' ', ' ', ' '],
-#   [Pawn.new([4, 0], false), ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-#   [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-#   [' ', Pawn.new([6, 1], false), Pawn.new([6, 2], false), Pawn.new([6, 3], false), Pawn.new([6, 4], false), Pawn.new([6, 5], false), Pawn.new([6, 6], false), Pawn.new([6, 7], false)],
-#   [' ', Knight.new([7, 1], false), Bishop.new([7, 2], false), Queen.new([7, 3], false), King.new([7, 4], false), Bishop.new([7, 5], false), Knight.new([7, 6], false), Rook.new([7, 7], false)]
-# ]
+  def untake(piece_co_ord, origin, is_white)
+    @board[origin[0]][origin[1]] = select_piece(piece_co_ord)
+    @board[piece_co_ord[0]][piece_co_ord[1]] = remove_last_from_taken_array(is_white)
+    update_piece_position(origin)
+  end
+
+  def remove_last_from_taken_array(is_white)
+    if is_white
+      @taken_black_pieces.pop
+    else
+      @taken_white_pieces.pop
+    end
+  end
+end
