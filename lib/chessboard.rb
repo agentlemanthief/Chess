@@ -150,41 +150,13 @@ class ChessBoard
     check_each_piece_for_check(king, is_white)
   end
 
-  def check_mate?(is_white)
-    king = return_king(is_white)
-
-    # select all pieces of is_white colour
-    pieces = @board.map do |array|
-      array.select { |square| square.is_a?(ChessPiece) && square.is_white == is_white }
-    end
-    pieces.flatten!
-
-    # check all pieces moves to see if still in check
+  def checkmate?(is_white)
     results = []
-    pieces.map do |piece|
-      original_position = piece.position
-      piece.next_moves.map do |move|
-        if space_empty?(move)
-          make_move(piece.position, move)
-          results << check?(is_white)
-          make_move(piece.position, original_position)
-        end
-      end
-    end
-
-    # can king take piece putting it in check/take it's way out of check?
-    king.next_moves.map do |move|
-      original_position = king.position
-      if !space_empty?(move) && select_piece(move).is_white != is_white
-        take_piece(king.position, move)
-        results << check?(is_white)
-        untake(move, original_position, is_white)
-      end
-    end
-
-    # can other pieces take the piece putting king in check?
-    results << !check_each_piece_for_check(@in_check_by, @in_check_by.is_white)
-    @in_check_by = nil
+    king = return_king(is_white)
+    pieces = select_pieces_of_color(is_white)
+    can_any_piece_move_and_stop_check(results, pieces, is_white)
+    can_king_take_out_of_check(results, king, is_white)
+    can_any_piece_take_the_piece_putting_king_in_check(results)
     results.all?(true)
   end
 
@@ -200,5 +172,41 @@ class ChessBoard
     else
       @taken_white_pieces.pop
     end
+  end
+
+  def select_pieces_of_color(is_white)
+    pieces = @board.map do |array|
+      array.select { |square| square.is_a?(ChessPiece) && square.is_white == is_white }
+    end
+    pieces.flatten!
+  end
+
+  def can_any_piece_move_and_stop_check(results, pieces, is_white)
+    pieces.map do |piece|
+      original_position = piece.position
+      piece.next_moves.map do |move|
+        if space_empty?(move)
+          make_move(piece.position, move)
+          results << check?(is_white)
+          make_move(piece.position, original_position)
+        end
+      end
+    end
+  end
+
+  def can_king_take_out_of_check(results, king, is_white)
+    king.next_moves.map do |move|
+      original_position = king.position
+      if !space_empty?(move) && select_piece(move).is_white != is_white
+        take_piece(king.position, move)
+        results << check?(is_white)
+        untake(move, original_position, is_white)
+      end
+    end
+  end
+
+  def can_any_piece_take_the_piece_putting_king_in_check(results)
+    results << !check_each_piece_for_check(@in_check_by, @in_check_by.is_white)
+    @in_check_by = nil
   end
 end
