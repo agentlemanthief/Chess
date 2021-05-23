@@ -34,11 +34,11 @@ class ChessPiece
   end
 
   def make_tree(start, destination)
-    queue = [self.class.new(start, self.is_white)]
+    queue = [self.class.new(start, is_white)]
     current = queue.shift
     until current.position == destination
       current.next_moves(self.class::MOVE_STEP).each do |move|
-        queue << self.class.new(move, self.is_white, current)
+        queue << self.class.new(move, is_white, current)
       end
       current = queue.shift
     end

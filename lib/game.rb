@@ -5,13 +5,14 @@ require 'yaml'
 require_relative 'chessboard'
 require_relative 'display'
 
+# rubocop:disable Metrics/ClassLength
+
 # Class to determine game flow and get inputs
 class Game
   include Display
 
   def initialize(chess_board = ChessBoard.new)
     @chess_board = chess_board
-    @winner = nil
     @white_player_turn = true
   end
 
@@ -20,7 +21,7 @@ class Game
     load_game
     @chess_board.display_board
     game_loop
-    puts "Checkmate!"
+    puts 'Checkmate!'
     puts "Congratulations!! #{winner} player wins the game!!\n\n"
   end
 
@@ -32,7 +33,7 @@ class Game
       puts "#{@white_player_turn ? 'Black' : 'White'} King is in check" if @chess_board.check?(!@white_player_turn)
       break if game_over?(!@white_player_turn)
 
-      @white_player_turn ? @white_player_turn = false : @white_player_turn = true
+      @white_player_turn = @white_player_turn ? false : true
     end
   end
 
@@ -47,61 +48,79 @@ class Game
   end
 
   def validate(input)
-    return input if input.match?(/^[A-Z][1-8]$|^\e$|^SAVE$/)
+    return input if input.match?(/^[A-H][1-8]$|^\e$|^SAVE$/)
 
     puts "Please enter in the format: 'a1', 'esc' to change piece selection or 'save' to save the game."
     validate(gets.chomp.upcase)
   end
 
   def move_piece(is_white_piece)
+    initial_text(is_white_piece)
+    piece_co_ord = return_correct_piece_co_ordinate(is_white_piece)
+    puts 'Please choose where to move to.'
+    destination = return_valid_destination(is_white_piece, piece_co_ord)
+    make_or_take(piece_co_ord, destination, is_white_piece)
+  end
+
+  def initial_text(is_white_piece)
     if @chess_board.check?(is_white_piece)
       puts 'Please make a move out of check.'
     else
-      puts "Please choose a piece to move."
+      puts 'Please choose a piece to move.'
     end
+  end
 
+  def return_correct_piece_co_ordinate(is_white_piece)
     piece_co_ord = return_co_ord
-
     while @chess_board.space_empty?(piece_co_ord) || @chess_board.select_piece(piece_co_ord).is_white != is_white_piece
       puts 'Please pick one of your pieces, try again...'
       piece_co_ord = return_co_ord
     end
+    piece_co_ord
+  end
 
-    puts "Please choose where to move to."
+  def return_valid_destination(is_white_piece, piece_co_ord)
     destination = return_co_ord
-
-    # insert check, check. If king still in check prompt to try another move or move another piece
-
     return move_piece(is_white_piece) if destination == "\e"
 
-    until @chess_board.move_valid_for_piece?(piece_co_ord, destination) && @chess_board.path_clear?(piece_co_ord, destination)
+    until @chess_board.move_valid_for_piece?(piece_co_ord,
+                                             destination) && @chess_board.path_clear?(piece_co_ord, destination)
       puts 'Choose another move'
       destination = return_co_ord
     end
+    destination
+  end
 
+  def make_or_take(piece_co_ord, destination, is_white_piece)
     if @chess_board.space_empty?(destination)
       @chess_board.make_move(piece_co_ord, destination)
       move_piece(is_white_piece) if @chess_board.check?(is_white_piece)
     elsif @chess_board.select_piece(piece_co_ord).is_white != @chess_board.select_piece(destination).is_white
-      if @chess_board.select_piece(piece_co_ord).is_a?(Pawn) && @chess_board.select_piece(piece_co_ord).take_moves.include?(destination)
-        @chess_board.take_piece(piece_co_ord, destination)
-      elsif !@chess_board.select_piece(piece_co_ord).is_a?(Pawn)
-        @chess_board.take_piece(piece_co_ord, destination)
-      else
-        puts "You can't take that way, try another move."
-        move_piece(is_white_piece)
-      end
+      take_piece_logic(piece_co_ord, destination, is_white_piece)
     else
       puts 'You cannot take your own pieces! Try another move.'
       move_piece(is_white_piece)
     end
   end
 
+  def take_piece_logic(piece_co_ord, destination, is_white_piece)
+    if @chess_board.select_piece(piece_co_ord).is_a?(Pawn)
+      if @chess_board.select_piece(piece_co_ord).take_moves.include?(destination)
+        @chess_board.take_piece(piece_co_ord, destination)
+      else
+        puts "You can't take that way, try another move."
+        move_piece(is_white_piece)
+      end
+    else
+      @chess_board.take_piece(piece_co_ord, destination)
+    end
+  end
+
   def return_co_ord
     alpha = %w[A B C D E F G H]
-    move_split = move_input.split('')
+    move_split = move_input.chars
     if move_split.include?("\e")
-      puts "You changed your mind, choose another piece to move."
+      puts 'You changed your mind, choose another piece to move.'
       return "\e"
     end
     temp_a = move_split[1].to_i - 1
@@ -110,11 +129,11 @@ class Game
   end
 
   def game_over?(is_white)
-    return true if @chess_board.check?(is_white) && @chess_board.check_mate?(is_white)
+    return true if @chess_board.check?(is_white) && @chess_board.checkmate?(is_white)
   end
 
   def winner
-    winner = @chess_board.check_mate?(false) ? 'White' : 'Black'
+    @chess_board.checkmate?(false) ? 'White' : 'Black'
   end
 
   def want_to_save(input)
@@ -138,7 +157,8 @@ class Game
   end
 
   def from_yaml(file)
-    data = YAML.load(File.read(file))
+    data = YAML.safe_load(File.read(file), permitted_classes: [ChessBoard, Rook, Knight, King, Queen, Bishop, Pawn],
+                                           aliases: true)
     @chess_board = data['chess_board']
     @white_player_turn = data['white_player_turn']
   end
@@ -156,3 +176,5 @@ class Game
     File.delete('save_game.yaml')
   end
 end
+
+# rubocop:enable Metrics/ClassLength

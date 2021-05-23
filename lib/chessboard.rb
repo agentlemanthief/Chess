@@ -8,6 +8,8 @@ require_relative 'rook'
 require_relative 'pawn'
 require_relative 'display'
 
+# rubocop:disable Metrics/ClassLength
+
 # Class describing a chessboard and the methods required to manipulate chess pieces/check for check/checkmate
 class ChessBoard
   attr_reader :taken_black_pieces, :taken_white_pieces, :in_check_by
@@ -126,7 +128,7 @@ class ChessBoard
     king = @board.map do |array|
       array.select { |square| square.is_a?(King) && square.is_white == is_white }
     end
-    king = king.flatten[0]
+    king.flatten[0]
   end
 
   def check_each_piece_for_check(king, is_white)
@@ -185,11 +187,11 @@ class ChessBoard
     pieces.map do |piece|
       original_position = piece.position
       piece.next_moves.map do |move|
-        if space_empty?(move)
-          make_move(piece.position, move)
-          results << check?(is_white)
-          make_move(piece.position, original_position)
-        end
+        next unless space_empty?(move)
+
+        make_move(piece.position, move)
+        results << check?(is_white)
+        make_move(piece.position, original_position)
       end
     end
   end
@@ -197,11 +199,11 @@ class ChessBoard
   def can_king_take_out_of_check(results, king, is_white)
     king.next_moves.map do |move|
       original_position = king.position
-      if !space_empty?(move) && select_piece(move).is_white != is_white
-        take_piece(king.position, move)
-        results << check?(is_white)
-        untake(move, original_position, is_white)
-      end
+      next unless !space_empty?(move) && select_piece(move).is_white != is_white
+
+      take_piece(king.position, move)
+      results << check?(is_white)
+      untake(move, original_position, is_white)
     end
   end
 
@@ -210,3 +212,5 @@ class ChessBoard
     @in_check_by = nil
   end
 end
+
+# rubocop:enable Metrics/ClassLength

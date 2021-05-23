@@ -1,6 +1,8 @@
+# Frozen_string_literal: true
+
 # Module containing display elements for the chess game
 module Display
-  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
 
   INTRO = <<~'INTRO'
     /\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\_/\
@@ -60,7 +62,7 @@ module Display
 
     BOARD
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 
   def print_helper(board_array_item)
     board_array_item == ' ' ? ' ' : board_array_item.token

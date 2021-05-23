@@ -20,7 +20,8 @@ class Pawn < ChessPiece
   end
 
   def take_moves
-    available_moves = TAKE_MOVES.map do |move|
+    take_moves = take_moves_by_color
+    available_moves = take_moves.map do |move|
       move.each_with_index.map do |co_ord, i|
         co_ord + @position[i] unless (co_ord + @position[i]).negative? || (co_ord + @position[i]) > 7
       end
@@ -28,17 +29,29 @@ class Pawn < ChessPiece
     available_moves.delete_if { |move| move.include?(nil) }
   end
 
-  def next_moves(possible_moves = self.class::MOVES)
+  def take_moves_by_color
     if @is_white
-      moves = @first_move ? [[1, 0], [2, 0]] : [[1, 0]]
+      [[1, 1], [1, -1]]
     else
-      moves = @first_move ? [[-1, 0], [-2, 0]] : [[-1, 0]]
+      [[-1, -1], [-1, 1]]
     end
+  end
+
+  def next_moves
+    moves = moves_by_color
     next_moves = moves.map do |move|
       move.each_with_index.map do |co_ord, i|
         co_ord + @position[i] unless (co_ord + @position[i]).negative? || (co_ord + @position[i]) > 7
       end
     end
     next_moves.delete_if { |move| move.include?(nil) }
+  end
+
+  def moves_by_color
+    if @is_white
+      @first_move ? [[1, 0], [2, 0]] : [[1, 0]]
+    else
+      @first_move ? [[-1, 0], [-2, 0]] : [[-1, 0]]
+    end
   end
 end
